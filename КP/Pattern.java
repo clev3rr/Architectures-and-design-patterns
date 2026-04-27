@@ -13,7 +13,7 @@ public class CourierDelivery implements Delivery {
 
     @Override
     public void arrangeDelivery(String orderDetails) {
-        System.out.println("📦 Формування доставки КУР'ЄРОМ за адресою пацієнта для: " + orderDetails);
+        System.out.println("Формування доставки КУР'ЄРОМ за адресою пацієнта для: " + orderDetails);
     }
 }
 
@@ -25,7 +25,7 @@ public class PostalDelivery implements Delivery {
 
     @Override
     public void arrangeDelivery(String orderDetails) {
-        System.out.println("📮 Передача пакунку з ліками до поштового відділення для: " + orderDetails);
+        System.out.println("Передача пакунку з ліками до поштового відділення для: " + orderDetails);
     }
 }
 
