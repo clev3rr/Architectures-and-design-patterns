@@ -1,33 +1,95 @@
-package org.example.lab1; // Вказує пакет, у якому знаходиться цей клас
+// 1. Спільний інтерфейс для всіх типів доставки
+public interface Delivery {
+    double calculateCost();
+    void arrangeDelivery(String orderDetails);
+}
 
-// Імпорт необхідних класів з бібліотеки Spring Boot для запуску консольного додатка
-import org.springframework.boot.CommandLineRunner;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
-@SpringBootApplication // Анотація, яка позначає цей клас як головний конфігураційний клас Spring Boot додатка
-public class Lab1Application implements CommandLineRunner { // Реалізуємо інтерфейс CommandLineRunner, щоб виконати код одразу після старту програми в консолі
-
-    private final MinArray minArray; // Оголошення поля для зберігання об'єкта класу MinArray (нашої бізнес-логіки)
-
-    // Конструктор класу. Через нього Spring автоматично створює та передає (інжектить) об'єкт MinArray
-    public Lab1Application(MinArray minArray) {
-       this.minArray = minArray;
-    }
-
-    // Головний метод main — стандартна точка входу для запуску будь-якої Java-програми
-    public static void main(String[] args) {
-       // Запускає фреймворк Spring Boot, піднімає контекст та ініціалізує наш додаток
-       SpringApplication.run(Lab1Application.class, args);
-    }
-
-    // Перевизначений метод run. Код у ньому виконається автоматично після того, як Spring Boot успішно завантажиться
+// 2. Конкретні продукти (Способи доставки)
+public class CourierDelivery implements Delivery {
     @Override
-    public void run(String... args) throws Exception {
-       // Виведення інформаційного текстового заголовка в консоль
-       System.out.println("=== Пошук мінімального числа в масиві ===");
+    public double calculateCost() {
+        return 150.0; // Вартість послуг кур'єра
+    }
 
-       // Виклик методу findMin() з нашого компонента для виконання основної логіки програми
-       minArray.findMin();
+    @Override
+    public void arrangeDelivery(String orderDetails) {
+        System.out.println("📦 Формування доставки КУР'ЄРОМ за адресою пацієнта для: " + orderDetails);
+    }
+}
+
+public class PostalDelivery implements Delivery {
+    @Override
+    public double calculateCost() {
+        return 80.0; // Вартість поштової відправки
+    }
+
+    @Override
+    public void arrangeDelivery(String orderDetails) {
+        System.out.println("📮 Передача пакунку з ліками до поштового відділення для: " + orderDetails);
+    }
+}
+
+public class PharmacyPickup implements Delivery {
+    @Override
+    public double calculateCost() {
+        return 0.0; // Самовивіз безкоштовний
+    }
+
+    @Override
+    public void arrangeDelivery(String orderDetails) {
+        System.out.println("Бронювання препаратів на касі в обраній аптеці для: " + orderDetails);
+    }
+}
+
+// 3. Базовий клас Фабрики
+public abstract class DeliveryFactory {
+    // Фабричний метод
+    public abstract Delivery createDelivery();
+
+    // Загальна бізнес-логіка оформлення замовлення
+    public void processOrder(String orderDetails) {
+        Delivery delivery = createDelivery();
+        double cost = delivery.calculateCost();
+        System.out.println("Вартість доставки складе: " + cost + " грн.");
+        delivery.arrangeDelivery(orderDetails);
+    }
+}
+
+// 4. Конкретні фабрики для створення відповідних типів доставки
+public class CourierFactory extends DeliveryFactory {
+    @Override
+    public Delivery createDelivery() {
+        return new CourierDelivery();
+    }
+}
+
+public class PostalFactory extends DeliveryFactory {
+    @Override
+    public Delivery createDelivery() {
+        return new PostalDelivery();
+    }
+}
+
+public class PickupFactory extends DeliveryFactory {
+    @Override
+    public Delivery createDelivery() {
+        return new PharmacyPickup();
+    }
+}
+
+// 5. Клієнтський код (Наприклад, контролер кошика інтернет-аптеки)
+public class PharmacyApp {
+    public static void main(String[] args) {
+        String orderInfo = "Замовлення #777 (Вітамін С, Ібупрофен)";
+
+        // Користувач обирає самовивіз
+        System.out.println("--- Клієнт обрав самовивіз ---");
+        DeliveryFactory pickupFactory = new PickupFactory();
+        pickupFactory.processOrder(orderInfo);
+
+        // Інший користувач замовляє ліки кур'єром
+        System.out.println("\n--- Клієнт обрав кур'єра ---");
+        DeliveryFactory courierFactory = new CourierFactory();
+        courierFactory.processOrder(orderInfo);
     }
 }
